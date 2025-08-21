@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>1-10 야자 관리 프로그램</title>
+<style>
+  :root{
+    --bg:#f6f8fb; --card:#fff; --border:#e5e7eb; --text:#0f172a; --sub:#6b7280;
+    --blue:#3b82f6; --red:#ef4444; --gray:#94a3b8;
+    --shadow:0 8px 24px rgba(15,23,42,.08); --r:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Malgun Gothic,Helvetica,Arial,sans-serif;
+    overflow:hidden; /* 스크롤 없음 */
+  }
+  .page{ max-width:1360px; margin:18px auto; padding:0 14px; height:calc(100% - 36px); }
+  header{
+    background:#0b2545; color:#e6f0ff; border-radius:16px; padding:14px 18px;
+    display:flex; justify-content:space-between; align-items:center; gap:10px; box-shadow:var(--shadow);
+  }
+  header h1{ margin:0; font-size:16px; font-weight:800; }
+  .meta{ font-size:12px; opacity:.9; white-space:nowrap; }
+
+  .fit-area{ margin-top:12px; height:calc(100% - 72px); transform-origin:top left; padding-bottom:18px; }
+
+  .controls{ display:flex; gap:8px; margin:8px 2px 12px; flex-wrap:wrap; }
+  .btn{
+    background:#fff; border:1px solid var(--border); border-radius:10px; padding:8px 10px;
+    font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(15,23,42,.06);
+  }
+  .btn:active{ transform:translateY(1px); }
+  .hint{ margin-left:auto; color:#6b7280; font-size:12px; align-self:center; }
+
+  /* === 6열 고정 그리드 === */
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap:10px;
+  }
+
+  .card{
+    background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:10px 12px;
+    display:grid; grid-template-columns:auto 1fr auto; grid-template-rows:auto auto; gap:6px 10px;
+    align-items:center; box-shadow:0 2px 8px rgba(15,23,42,.06);
+    min-height:74px;
+  }
+  .no{ grid-row:1 / span 2; font-weight:800; color:#334155; width:32px; text-align:right; padding-right:4px; }
+  .name{ font-weight:800; }
+  .id{ font-size:11px; color:var(--sub); }
+
+  .status{
+    justify-self:end; align-self:start;
+    display:inline-flex; align-items:center; gap:8px;
+    background:#f8fafc; border:1px solid var(--border);
+    padding:6px 10px; border-radius:999px; cursor:pointer; font-weight:800; font-size:12px; height:30px;
+  }
+  .pill{ width:10px; height:10px; border-radius:999px; }
+  .present{ color:var(--blue); }
+  .present .pill{ background:var(--blue); }
+  .absent{ color:var(--red); }
+  .absent .pill{ background:var(--red); }
+  .unknown{ color:var(--gray); }
+  .unknown .pill{ background:var(--gray); }
+
+  .reason-wrap{ grid-column:2 / -1; display:flex; align-items:center; gap:8px; }
+  .reason-label{ font-size:11px; color:var(--sub); }
+  .reason{
+    font-size:12px; padding:4px 8px; border:1px solid var(--border); border-radius:8px; background:#fff;
+    visibility:hidden; /* 불참일 때만 보이게 */
+  }
+  .card.absent .reason{ visibility:visible; }
+
+  .bottom-space{ height:10px; } /* 마지막 줄 답답함 방지용 공간 */
+</style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>1-10 야자 관리 프로그램</h1>
+      <div class="meta">날짜·시간: <span id="dt"></span></div>
+    </header>
+
+    <div id="fitArea" class="fit-area">
+      <div class="controls">
+        <button class="btn" onclick="setAll('present')">모두 참여</button>
+        <button class="btn" onclick="setAll('absent')">모두 불참</button>
+        <button class="btn" onclick="setAll('unknown')">모두 미정</button>
+        <div class="hint">배지 클릭 → 참여/불참/미정 전환 (불참 시 사유 선택)</div>
+      </div>
+
+      <section id="grid" class="grid" aria-label="번호순 카드"></section>
+      <div class="bottom-space"></div>
+    </div>
+  </div>
+
+<script>
+  // 날짜+시간 실시간 표시
+  const dtEl = document.getElementById('dt');
+  function tick(){
+    const d = new Date();
+    const date = d.toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric', weekday:'short' });
+    const time = d.toLocaleTimeString('ko-KR', { hour12:false });
+    dtEl.textContent = `${date} · ${time}`;
+  }
+  tick(); setInterval(tick, 1000);
+
+  // 명단 (1~36)
+  const roster = [
+    {no:1, id:'11001', name:'강원우'},
+    {no:2, id:'11002', name:'고진용'},
+    {no:3, id:'11003', name:'권범수'},
+    {no:4, id:'11004', name:'김민찬'},
+    {no:5, id:'11005', name:'김선규'},
+    {no:6, id:'11006', name:'김영광'},
+    {no:7, id:'11007', name:'문강윤'},
+    {no:8, id:'11008', name:'박상호'},
+    {no:9, id:'11009', name:'박준형'},
+    {no:10, id:'11010', name:'박지민'},
+    {no:11, id:'11011', name:'석지환'},
+    {no:12, id:'11012', name:'손동현'},
+    {no:13, id:'11013', name:'오시훈'},
+    {no:14, id:'11014', name:'오태윤'},
+    {no:15, id:'11015', name:'유이준'},
+    {no:16, id:'11016', name:'유태강'},
+    {no:17, id:'11017', name:'유태민'},
+    {no:18, id:'11018', name:'윤영인'},
+    {no:19, id:'11019', name:'이권우'},
+    {no:20, id:'11020', name:'이민혁'},
+    {no:21, id:'11021', name:'이승준'},
+    {no:22, id:'11022', name:'이승헌'},
+    {no:23, id:'11023', name:'이요셉'},
+    {no:24, id:'11024', name:'이중희'},
+    {no:25, id:'11025', name:'이지후'},
+    {no:26, id:'11026', name:'이한별'},
+    {no:27, id:'11027', name:'장우진'},
+    {no:28, id:'11028', name:'장재원'},
+    {no:29, id:'11029', name:'전희재'},
+    {no:30, id:'11030', name:'정재욱'},
+    {no:31, id:'11031', name:'지민건'},
+    {no:32, id:'11032', name:'천정욱'},
+    {no:33, id:'11033', name:'최동현'},
+    {no:34, id:'11034', name:'최윤서'},
+    {no:35, id:'11035', name:'황태민'},
+    {no:36, id:'11036', name:'이주환'},
+  ].map(x=>({ ...x, status:'unknown', reason:'기타' }));
+
+  const REASONS = ['동아리','학원','병원','기타'];
+  const KEY='selfstudy-1-10-cards-v3';
+  const grid = document.getElementById('grid');
+
+  function render(){
+    grid.innerHTML='';
+    roster.forEach(p=>{
+      const card = document.createElement('div');
+      card.className='card ' + p.status;
+
+      const statusBtn = document.createElement('button');
+      statusBtn.className='status ' + p.status;
+      statusBtn.innerHTML = `<span class="pill"></span><span class="label">${labelOf(p.status)}</span>`;
+      statusBtn.addEventListener('click', ()=>{
+        p.status = nextStatus(p.status);
+        if(p.status!=='absent'){ p.reason='기타'; }
+        save(); render(); fitToPage();
+      });
+
+      const select = document.createElement('select');
+      select.className='reason';
+      REASONS.forEach(r=>{
+        const opt = document.createElement('option');
+        opt.value=r; opt.textContent=r;
+        if(p.reason===r) opt.selected=true;
+        select.appendChild(opt);
+      });
+      select.addEventListener('change', ()=>{ p.reason = select.value; save(); });
+
+      card.innerHTML = `
+        <div class="no">${p.no}.</div>
+        <div class="name">${p.name}</div>
+        <div class="id">${p.id}</div>
+      `;
+      const reasonWrap = document.createElement('div');
+      reasonWrap.className='reason-wrap';
+      reasonWrap.innerHTML = `<span class="reason-label">불참 사유</span>`;
+      reasonWrap.appendChild(select);
+
+      card.appendChild(statusBtn);
+      card.appendChild(reasonWrap);
+
+      const updateVisual = ()=>{
+        card.className = 'card ' + p.status;
+        statusBtn.className = 'status ' + p.status;
+        statusBtn.querySelector('.label').textContent = labelOf(p.status);
+      };
+      updateVisual();
+
+      grid.appendChild(card);
+    });
+  }
+
+  function labelOf(s){ return s==='present'?'참여':s==='absent'?'불참':'미정'; }
+  function nextStatus(s){ return s==='unknown'?'present':s==='present'?'absent':'unknown'; }
+  function setAll(s){
+    roster.forEach(p=>{ p.status=s; if(s!=='absent') p.reason='기타'; });
+    save(); render(); fitToPage();
+  }
+
+  // 저장/복구
+  function save(){ localStorage.setItem(KEY, JSON.stringify(roster)); }
+  (function restore(){
+    const raw = localStorage.getItem(KEY);
+    if(!raw) return;
+    try{
+      const saved = JSON.parse(raw);
+      saved.forEach(s=>{
+        const i = roster.findIndex(r=>r.no===s.no);
+        if(i>-1){
+          roster[i].status = s.status || 'unknown';
+          roster[i].reason = REASONS.includes(s.reason)?s.reason:'기타';
+        }
+      });
+    }catch(_){}
+  })();
+
+  // 화면 높이에 맞게 자동 축소(스크롤 방지)
+  function fitToPage(){
+    const area = document.getElementById('fitArea');
+    const headerH = document.querySelector('header').offsetHeight;
+    const availH = document.body.clientHeight - headerH - 28; // 약간 여유
+    const needH = area.scrollHeight;
+    const scale = Math.min(1, availH / needH);
+    area.style.transform = `scale(${scale})`;
+  }
+  window.addEventListener('resize', fitToPage);
+
+  render();
+  fitToPage();
+</script>
+</body>
+</html>
