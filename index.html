@@ -5,107 +5,148 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>2-3 야자 관리 프로그램</title>
 <style>
-  :root{--bg:#f6f8fb;--card:#fff;--border:#e5e7eb;--text:#0f172a;--sub:#6b7280;--blue:#3b82f6;--red:#ef4444;--shadow:0 8px 24px rgba(15,23,42,.08);--r:14px}
+  :root{
+    --bg:#f6f8fb;--card:#fff;--border:#e5e7eb;--text:#0f172a;--sub:#6b7280;
+    --blue:#3b82f6;--red:#ef4444;--shadow:0 8px 24px rgba(15,23,42,.08);--r:12px
+  }
   *{box-sizing:border-box}
-  html,body{min-height:100%}
-  body{margin:0;background:var(--bg);color:var(--text);font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Malgun Gothic,Helvetica,Arial,sans-serif;overflow:auto;word-break:keep-all}
-  .page{max-width:1580px;margin:18px auto;padding:0 14px 18px}
-  header{background:#0b2545;color:#e6f0ff;border-radius:16px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px;box-shadow:var(--shadow);margin-bottom:14px}
-  header h1{margin:0;font-size:16px;font-weight:800}
-  .meta{font-size:12px;opacity:.9;white-space:nowrap}
-  .layout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:14px;align-items:start}
-  .side{display:flex;flex-direction:column;gap:10px;position:sticky;top:18px}
-  .panel{background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:12px}
-  .panel h2{margin:0 0 10px;font-size:14px;color:#334155}
-  .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-  .btn{background:#fff;border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-weight:700;cursor:pointer;box-shadow:0 2px 6px rgba(15,23,42,.06)}
-  .btn.small{border-radius:8px;padding:6px 9px}
+  html,body{width:100%;height:100%;margin:0}
+  body{
+    background:var(--bg);color:var(--text);
+    font:13px/1.35 system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Malgun Gothic,Helvetica,Arial,sans-serif;
+    overflow:hidden;word-break:keep-all
+  }
+  .viewport{
+    width:100vw;height:100vh;padding:12px;overflow:hidden
+  }
+  .fit-shell{
+    width:100%;height:100%;position:relative;overflow:hidden
+  }
+  .fit-stage{
+    transform-origin:top left;
+    width:1540px;
+  }
+  .page{
+    width:1540px;
+    display:flex;flex-direction:column;gap:10px
+  }
+  header{
+    background:#0b2545;color:#e6f0ff;border-radius:14px;padding:12px 16px;
+    display:flex;justify-content:space-between;align-items:center;gap:10px;box-shadow:var(--shadow)
+  }
+  header h1{margin:0;font-size:15px;font-weight:800}
+  .meta{font-size:11px;opacity:.95;white-space:nowrap}
+  .layout{
+    display:grid;grid-template-columns:320px minmax(0,1fr);gap:12px;align-items:start
+  }
+  .side{display:flex;flex-direction:column;gap:10px}
+  .panel{
+    background:#fff;border:1px solid var(--border);border-radius:14px;
+    box-shadow:var(--shadow);padding:10px
+  }
+  .panel h2{margin:0 0 8px;font-size:13px;color:#334155}
+  .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .btn{
+    background:#fff;border:1px solid var(--border);border-radius:9px;padding:6px 9px;
+    font-weight:700;cursor:pointer;box-shadow:0 2px 6px rgba(15,23,42,.06);font-size:12px
+  }
+  .btn.small{border-radius:8px;padding:5px 8px}
   .btn:active{transform:translateY(1px)}
-  .cal-title{font-weight:800}
-  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;font-size:12px;user-select:none}
+  .cal-title{font-weight:800;font-size:13px}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;font-size:11px;user-select:none}
   .cal-dow{text-align:center;color:#64748b;font-weight:700}
-  .cal-day{text-align:center;padding:8px 0;border:1px solid var(--border);border-radius:10px;cursor:pointer;background:#fff}
+  .cal-day{text-align:center;padding:7px 0;border:1px solid var(--border);border-radius:9px;cursor:pointer;background:#fff}
   .cal-day.other{opacity:.45}
   .cal-day.today{outline:2px solid #3b82f6}
   .cal-day.selected{background:#eff6ff;border-color:#bfdbfe;font-weight:800}
-  .timeline{max-height:320px;overflow:auto}
-  .tl-empty{color:#64748b;font-size:12px}
-  .tl-item{display:flex;justify-content:space-between;padding:6px 8px;border:1px solid var(--border);border-radius:10px;margin-bottom:6px}
-  .tl-name{font-weight:800}
-  .tl-reason{font-size:12px;color:#64748b}
-  .controls{display:flex;gap:8px;margin:0 2px 10px;flex-wrap:wrap;align-items:center}
-  .hint{margin-left:auto;color:#6b7280;font-size:12px}
-  .search{height:38px;min-width:220px;padding:0 12px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--text);outline:none;box-shadow:0 2px 6px rgba(15,23,42,.06)}
+  .timeline{max-height:300px;overflow:auto}
+  .tl-empty{color:#64748b;font-size:11px}
+  .tl-item{
+    display:flex;justify-content:space-between;gap:8px;padding:5px 7px;border:1px solid var(--border);
+    border-radius:9px;margin-bottom:5px
+  }
+  .tl-name{font-weight:800;font-size:12px}
+  .tl-reason{font-size:11px;color:#64748b}
+  .controls{
+    display:flex;gap:7px;margin:0 2px 8px;flex-wrap:wrap;align-items:center
+  }
+  .hint{margin-left:auto;color:#6b7280;font-size:11px}
+  .search{
+    height:32px;min-width:180px;padding:0 10px;border:1px solid var(--border);border-radius:9px;
+    background:#fff;color:var(--text);outline:none;box-shadow:0 2px 6px rgba(15,23,42,.06);font-size:12px
+  }
   .search:focus{border-color:#93c5fd;box-shadow:0 0 0 4px rgba(59,130,246,.12)}
-  .grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto;gap:8px 12px;align-items:center;box-shadow:0 2px 8px rgba(15,23,42,.06);min-height:82px}
-  .no{grid-row:1 / span 2;font-weight:800;color:#334155;width:36px;text-align:right;padding-right:6px}
-  .name{font-weight:800}
-  .id{font-size:12px;color:var(--sub)}
-  .status{justify-self:end;align-self:start;display:inline-flex;align-items:center;gap:8px;background:#f8fafc;border:1px solid var(--border);padding:6px 12px;border-radius:999px;cursor:pointer;font-weight:800;font-size:12px;height:30px}
-  .pill{width:10px;height:10px;border-radius:999px}
+  .grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+  .card{
+    background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:9px 10px;
+    display:grid;grid-template-columns:28px 1fr auto;grid-template-rows:auto auto;gap:6px 8px;
+    align-items:center;box-shadow:0 2px 8px rgba(15,23,42,.06);min-height:70px
+  }
+  .no{grid-row:1 / span 2;font-weight:800;color:#334155;width:28px;text-align:right;padding-right:4px;font-size:12px}
+  .name{font-weight:800;font-size:13px}
+  .id{font-size:11px;color:var(--sub)}
+  .status{
+    justify-self:end;align-self:start;display:inline-flex;align-items:center;gap:6px;background:#f8fafc;
+    border:1px solid var(--border);padding:4px 9px;border-radius:999px;cursor:pointer;font-weight:800;
+    font-size:11px;height:26px
+  }
+  .pill{width:8px;height:8px;border-radius:999px}
   .present{color:#3b82f6}.present .pill{background:#3b82f6}
   .absent{color:#ef4444}.absent .pill{background:#ef4444}
-  .reason-wrap{grid-column:2 / -1;display:flex;align-items:center;gap:8px}
-  .reason-label{font-size:11px;color:#64748b;white-space:nowrap}
-  .reason{font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:8px;background:#fff;visibility:hidden;max-width:100%}
+  .reason-wrap{grid-column:2 / -1;display:flex;align-items:center;gap:7px;min-width:0}
+  .reason-label{font-size:10px;color:#64748b;white-space:nowrap}
+  .reason{
+    font-size:11px;padding:3px 7px;border:1px solid var(--border);border-radius:7px;
+    background:#fff;visibility:hidden;max-width:100%;min-width:0
+  }
   .card.absent .reason{visibility:visible}
-  .empty-grid{grid-column:1 / -1;background:#fff;border:1px dashed var(--border);border-radius:16px;padding:28px 18px;text-align:center;color:#64748b;box-shadow:0 2px 8px rgba(15,23,42,.04)}
-  @media (max-width:1300px){
-    .grid{grid-template-columns:repeat(4,minmax(0,1fr))}
-  }
-  @media (max-width:1100px){
-    .layout{grid-template-columns:1fr}
-    .side{position:static}
-    .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
-    .timeline{max-height:none}
-  }
-  @media (max-width:760px){
-    .page{padding:0 10px 14px}
-    header{flex-direction:column;align-items:flex-start}
-    .meta{white-space:normal}
-    .controls{flex-direction:column;align-items:stretch}
-    .hint{margin-left:0}
-    .search{min-width:0;width:100%}
-    .grid{grid-template-columns:1fr}
+  .empty-grid{
+    grid-column:1 / -1;background:#fff;border:1px dashed var(--border);border-radius:16px;
+    padding:22px 16px;text-align:center;color:#64748b;box-shadow:0 2px 8px rgba(15,23,42,.04)
   }
 </style>
 </head>
 <body>
-  <div class="page">
-    <header>
-      <h1>2-3 야자 관리 프로그램</h1>
-      <div class="meta">날짜·시간: <span id="dt"></span> · 보기 날짜: <span id="viewDate"></span></div>
-    </header>
+  <div class="viewport">
+    <div class="fit-shell" id="fitShell">
+      <div class="fit-stage" id="fitStage">
+        <div class="page" id="page">
+          <header>
+            <h1>2-3 야자 관리 프로그램</h1>
+            <div class="meta">날짜·시간: <span id="dt"></span> · 보기 날짜: <span id="viewDate"></span></div>
+          </header>
 
-    <div class="layout">
-      <div class="side">
-        <section class="panel">
-          <h2>달력</h2>
-          <div class="cal-header">
-            <button class="btn small" id="prevMonth">←</button>
-            <div class="cal-title" id="calTitle"></div>
-            <button class="btn small" id="nextMonth">→</button>
+          <div class="layout">
+            <div class="side">
+              <section class="panel">
+                <h2>달력</h2>
+                <div class="cal-header">
+                  <button class="btn small" id="prevMonth">←</button>
+                  <div class="cal-title" id="calTitle"></div>
+                  <button class="btn small" id="nextMonth">→</button>
+                </div>
+                <div class="cal-grid" id="calGrid"></div>
+              </section>
+              <section class="panel">
+                <h2>타임라인 (선택 날짜의 불참자)</h2>
+                <div id="timeline" class="timeline"></div>
+              </section>
+            </div>
+
+            <div>
+              <div class="controls">
+                <button class="btn" id="allPresent">모두 참여</button>
+                <button class="btn" id="allAbsent">모두 불참</button>
+                <button class="btn" id="goToday">오늘</button>
+                <button class="btn" id="downloadExcel">엑셀 다운로드</button>
+                <input class="search" id="searchInput" type="text" placeholder="번호, 학번, 이름 검색" />
+                <button class="btn" id="clearSearch">검색 초기화</button>
+                <div class="hint">요일 자동 불참은 ‘학원’, 수동 불참은 기본 ‘기타’로 저장됨</div>
+              </div>
+              <section id="grid" class="grid"></section>
+            </div>
           </div>
-          <div class="cal-grid" id="calGrid"></div>
-        </section>
-        <section class="panel">
-          <h2>타임라인 (선택 날짜의 불참자)</h2>
-          <div id="timeline" class="timeline"></div>
-        </section>
-      </div>
-
-      <div>
-        <div class="controls">
-          <button class="btn" id="allPresent">모두 참여</button>
-          <button class="btn" id="allAbsent">모두 불참</button>
-          <button class="btn" id="goToday">오늘</button>
-          <button class="btn" id="downloadExcel">엑셀 다운로드</button>
-          <input class="search" id="searchInput" type="text" placeholder="번호, 학번, 이름 검색" />
-          <button class="btn" id="clearSearch">검색 초기화</button>
-          <div class="hint">요일 자동 불참은 ‘학원’, 수동 불참은 기본 ‘기타’로 저장됨</div>
         </div>
-        <section id="grid" class="grid"></section>
       </div>
     </div>
   </div>
@@ -113,7 +154,7 @@
 <script>
   var REASONS=['동아리','학원','병원','방과후','기타']
   var WEEKDAYS=['일','월','화','수','목','금','토']
-  var KEY='selfstudy-2-03_v3'
+  var KEY='selfstudy-2-03_v4'
 
   var RULES={
     1:['화'],2:['화'],3:['목'],4:['화'],5:['월'],6:['수'],7:['화'],8:['화'],9:['수'],
@@ -149,6 +190,9 @@
   var gridEl=document.getElementById('grid')
   var timelineEl=document.getElementById('timeline')
   var searchInput=document.getElementById('searchInput')
+  var fitShell=document.getElementById('fitShell')
+  var fitStage=document.getElementById('fitStage')
+  var page=document.getElementById('page')
   var viewDate=new Date()
   var dated={}
 
@@ -284,6 +328,7 @@
     renderCalendar()
     renderList()
     renderTimeline()
+    fitToScreen()
   }
 
   function dayCell(d,other){
@@ -355,6 +400,7 @@
           card.className='card '+p.status
           btn.className='status '+p.status
           btn.innerHTML='<span class="pill"></span><span class="label">'+(p.status==='present'?'참여':'불참')+'</span>'
+          sel.value=p.reason
         }
 
         card.innerHTML='<div class="no">'+p.no+'.</div><div class="name">'+p.name+'</div><div class="id">'+p.id+'</div>'
@@ -366,6 +412,7 @@
           saveFor(viewDate)
           syncCard()
           renderTimeline()
+          fitToScreen()
         })
 
         sel.className='reason'
@@ -373,7 +420,6 @@
           var o=document.createElement('option')
           o.value=REASONS[r]
           o.textContent=REASONS[r]
-          if(p.reason===REASONS[r]) o.selected=true
           sel.appendChild(o)
         }
         sel.addEventListener('change',function(){
@@ -469,6 +515,21 @@
     URL.revokeObjectURL(url)
   }
 
+  function fitToScreen(){
+    var shellW=fitShell.clientWidth
+    var shellH=fitShell.clientHeight
+    fitStage.style.transform='scale(1)'
+    fitStage.style.width=page.offsetWidth+'px'
+    var needW=page.offsetWidth
+    var needH=page.offsetHeight
+    var scale=Math.min(shellW/needW,shellH/needH)
+    if(!isFinite(scale) || scale<=0) scale=1
+    if(scale>1) scale=1
+    fitStage.style.transform='scale('+scale+')'
+    fitStage.style.width=needW+'px'
+    fitShell.style.minHeight='0'
+  }
+
   document.getElementById('allPresent').addEventListener('click',function(){
     for(var i=0;i<roster.length;i++){
       roster[i].status='present'
@@ -478,6 +539,7 @@
     saveFor(viewDate)
     renderList()
     renderTimeline()
+    fitToScreen()
   })
 
   document.getElementById('allAbsent').addEventListener('click',function(){
@@ -489,6 +551,7 @@
     saveFor(viewDate)
     renderList()
     renderTimeline()
+    fitToScreen()
   })
 
   document.getElementById('goToday').addEventListener('click',function(){
@@ -500,12 +563,14 @@
   searchInput.addEventListener('input',function(){
     renderList()
     renderTimeline()
+    fitToScreen()
   })
 
   document.getElementById('clearSearch').addEventListener('click',function(){
     searchInput.value=''
     renderList()
     renderTimeline()
+    fitToScreen()
     searchInput.focus()
   })
 
@@ -534,6 +599,8 @@
       setView(new Date())
     }
   })
+
+  window.addEventListener('resize',fitToScreen)
 
   tick()
   setInterval(tick,1000)
