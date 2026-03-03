@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>1-10 야자 관리 프로그램</title>
+<title>2-3 야자 관리 프로그램</title>
 <style>
   :root{--bg:#f6f8fb;--card:#fff;--border:#e5e7eb;--text:#0f172a;--sub:#6b7280;--blue:#3b82f6;--red:#ef4444;--shadow:0 8px 24px rgba(15,23,42,.08);--r:14px}
   *{box-sizing:border-box}
@@ -35,6 +35,8 @@
   .tl-reason{font-size:12px;color:#64748b}
   .controls{display:flex;gap:8px;margin:0 2px 4px;flex-wrap:wrap;align-items:center}
   .hint{margin-left:auto;color:#6b7280;font-size:12px}
+  .search{height:38px;min-width:220px;padding:0 12px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--text);outline:none;box-shadow:0 2px 6px rgba(15,23,42,.06)}
+  .search:focus{border-color:#93c5fd;box-shadow:0 0 0 4px rgba(59,130,246,.12)}
   .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
   .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto;gap:8px 12px;align-items:center;box-shadow:0 2px 8px rgba(15,23,42,.06);min-height:82px}
   .no{grid-row:1 / span 2;font-weight:800;color:#334155;width:36px;text-align:right;padding-right:6px}
@@ -48,13 +50,14 @@
   .reason-label{font-size:11px;color:#64748b;white-space:nowrap}
   .reason{font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:8px;background:#fff;visibility:hidden}
   .card.absent .reason{visibility:visible}
+  .empty-grid{grid-column:1 / -1;background:#fff;border:1px dashed var(--border);border-radius:16px;padding:28px 18px;text-align:center;color:#64748b;box-shadow:0 2px 8px rgba(15,23,42,.04)}
   .bottom-space{height:10px}
 </style>
 </head>
 <body>
   <div class="page">
     <header>
-      <h1>1-10 야자 관리 프로그램</h1>
+      <h1>2-3 야자 관리 프로그램</h1>
       <div class="meta">날짜·시간: <span id="dt"></span> · 보기 날짜: <span id="viewDate"></span></div>
     </header>
 
@@ -80,6 +83,9 @@
           <button class="btn" id="allPresent">모두 참여</button>
           <button class="btn" id="allAbsent">모두 불참</button>
           <button class="btn" id="goToday">오늘</button>
+          <button class="btn" id="downloadExcel">엑셀 다운로드</button>
+          <input class="search" id="searchInput" type="text" placeholder="번호, 학번, 이름 검색" />
+          <button class="btn" id="clearSearch">검색 초기화</button>
           <div class="hint">요일 자동 불참은 ‘학원’, 수동 불참은 기본 ‘기타’로 저장됨</div>
         </div>
         <section id="grid" class="grid"></section>
@@ -89,9 +95,9 @@
   </div>
 
 <script>
-  const REASONS=['동아리','학원','병원','기타']
+  const REASONS=['동아리','학원','병원','방과후','기타']
   const WEEKDAYS=['일','월','화','수','목','금','토']
-  const KEY='selfstudy-1-10_v4'
+  const KEY='selfstudy-2-03_v1'
 
   const RULES={
     1:['화'],2:['화'],3:['목'],4:['화'],5:['월'],6:['수'],7:['화'],8:['화'],9:['수'],
@@ -101,18 +107,18 @@
   }
 
   const studentData=[
-    {no:1,id:'11001',name:'강원우'},{no:2,id:'11002',name:'고진용'},{no:3,id:'11003',name:'권범수'},
-    {no:4,id:'11004',name:'김민찬'},{no:5,id:'11005',name:'김선규'},{no:6,id:'11006',name:'김영광'},
-    {no:7,id:'11007',name:'문강윤'},{no:8,id:'11008',name:'박상호'},{no:9,id:'11009',name:'박준형'},
-    {no:10,id:'11010',name:'박지민'},{no:11,id:'11011',name:'석지환'},{no:12,id:'11012',name:'손동현'},
-    {no:13,id:'11013',name:'오시훈'},{no:14,id:'11014',name:'오태윤'},{no:15,id:'11015',name:'유이준'},
-    {no:16,id:'11016',name:'유태강'},{no:17,id:'11017',name:'유태민'},{no:18,id:'11018',name:'윤영인'},
-    {no:19,id:'11019',name:'이권우'},{no:20,id:'11020',name:'이민혁'},{no:21,id:'11021',name:'이승준'},
-    {no:22,id:'11022',name:'이승헌'},{no:23,id:'11023',name:'이요셉'},{no:24,id:'11024',name:'이중희'},
-    {no:25,id:'11025',name:'이지후'},{no:26,id:'11026',name:'이한별'},{no:27,id:'11027',name:'장우진'},
-    {no:28,id:'11028',name:'장재원'},{no:29,id:'11029',name:'전희재'},{no:30,id:'11030',name:'정재욱'},
-    {no:31,id:'11031',name:'지민건'},{no:32,id:'11032',name:'천정욱'},{no:33,id:'11033',name:'최동현'},
-    {no:34,id:'11034',name:'최윤서'},{no:35,id:'11035',name:'황태민'},{no:36,id:'11036',name:'이주환'}
+    {no:1,id:'20301',name:'고정현'},{no:2,id:'20302',name:'권오현'},{no:3,id:'20303',name:'김가빈'},
+    {no:4,id:'20304',name:'김건우'},{no:5,id:'20305',name:'김민성'},{no:6,id:'20306',name:'김민재'},
+    {no:7,id:'20307',name:'김선준'},{no:8,id:'20308',name:'김준우'},{no:9,id:'20309',name:'김채원'},
+    {no:10,id:'20310',name:'김태민'},{no:11,id:'20311',name:'김현서'},{no:12,id:'20312',name:'김형준'},
+    {no:13,id:'20313',name:'문서준'},{no:14,id:'20314',name:'박민준'},{no:15,id:'20315',name:'박준이'},
+    {no:16,id:'20316',name:'박지환'},{no:17,id:'20317',name:'방준서'},{no:18,id:'20318',name:'서도훈'},
+    {no:19,id:'20319',name:'석진오'},{no:20,id:'20320',name:'손우린'},{no:21,id:'20321',name:'오태윤'},
+    {no:22,id:'20322',name:'우승엽'},{no:23,id:'20323',name:'유어진'},{no:24,id:'20324',name:'이민혁'},
+    {no:25,id:'20325',name:'이성민'},{no:26,id:'20326',name:'이승준'},{no:27,id:'20327',name:'이승훈'},
+    {no:28,id:'20328',name:'이재성'},{no:29,id:'20329',name:'이채환'},{no:30,id:'20330',name:'장래겸'},
+    {no:31,id:'20331',name:'장우진'},{no:32,id:'20332',name:'전재신'},{no:33,id:'20333',name:'정현우'},
+    {no:34,id:'20334',name:'조성윤'},{no:35,id:'20335',name:'조승찬'},{no:36,id:'20336',name:'최승호'}
   ]
 
   const roster = studentData.map(x=>({no:x.no,id:x.id,name:x.name,status:'present',reason:'기타',manual:false}))
@@ -128,17 +134,29 @@
     const d=new Date()
     dtEl.textContent=d.toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'})+' · '+d.toLocaleTimeString('ko-KR',{hour12:false})
   }
-  tick(); setInterval(tick,1000)
+  tick()
+  setInterval(tick,1000)
 
   let viewDate=new Date()
-  const viewDateEl=document.getElementById('viewDate'),calTitle=document.getElementById('calTitle'),calGrid=document.getElementById('calGrid')
+  const viewDateEl=document.getElementById('viewDate')
+  const calTitle=document.getElementById('calTitle')
+  const calGrid=document.getElementById('calGrid')
+  const gridEl=document.getElementById('grid')
+  const timelineEl=document.getElementById('timeline')
+  const searchInput=document.getElementById('searchInput')
 
   function pad(n){return (''+n).padStart(2,'0')}
   function keyOf(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
   function fmt(d){return d.toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'})}
+  function fileDate(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
 
   let dated={}
-  try{const raw=localStorage.getItem(KEY);dated=raw?JSON.parse(raw):{}}catch(_){dated={}}
+  try{
+    const raw=localStorage.getItem(KEY)
+    dated=raw?JSON.parse(raw):{}
+  }catch(_){
+    dated={}
+  }
 
   function baseline(d){
     const dow=d.getDay()
@@ -156,7 +174,7 @@
       if(Array.isArray(saved)){
         const s=saved.find(x=>x&&x.no===b.no)
         if(s){
-          const manual = s.manual===true || s.status!==b.status || s.reason!==b.reason
+          const manual=s.manual===true || s.status!==b.status || s.reason!==b.reason
           if(manual) return {no:b.no,status:s.status,reason:s.reason,manual:true}
         }
       }
@@ -168,7 +186,10 @@
       p.reason=REASONS.includes(m.reason)?m.reason:'기타'
       p.manual=!!m.manual
     })
-    if(!Array.isArray(saved)){dated[key]=merged;localStorage.setItem(KEY,JSON.stringify(dated))}
+    if(!Array.isArray(saved)){
+      dated[key]=merged
+      localStorage.setItem(KEY,JSON.stringify(dated))
+    }
   }
 
   function saveFor(d){
@@ -181,7 +202,17 @@
     viewDate=new Date(d.getFullYear(),d.getMonth(),d.getDate())
     viewDateEl.textContent=fmt(viewDate)
     loadFor(viewDate)
-    renderCalendar();renderList();renderTimeline()
+    renderCalendar()
+    renderList()
+    renderTimeline()
+  }
+
+  function getFilteredRoster(){
+    const q=searchInput.value.trim().toLowerCase()
+    if(!q) return roster
+    return roster.filter(p=>{
+      return String(p.no).includes(q) || p.id.toLowerCase().includes(q) || p.name.toLowerCase().includes(q)
+    })
   }
 
   const WEEK_HEADER=['일','월','화','수','목','금','토']
@@ -189,52 +220,247 @@
     calGrid.innerHTML=''
     const y=viewDate.getFullYear(),m=viewDate.getMonth()
     calTitle.textContent=y+'년 '+(m+1)+'월'
-    WEEK_HEADER.forEach(dw=>{const h=document.createElement('div');h.className='cal-dow';h.textContent=dw;calGrid.appendChild(h)})
-    const first=new Date(y,m,1),start=first.getDay(),days=new Date(y,m+1,0).getDate()
-    const prevDays=start,prevMonthDays=new Date(y,m,0).getDate()
-    for(let i=prevDays-1;i>=0;i--){const d=new Date(y,m-1,prevMonthDays-i);calGrid.appendChild(dayCell(d,true))}
-    for(let day=1;day<=days;day++){const d=new Date(y,m,day);calGrid.appendChild(dayCell(d,false))}
-    const total=7+prevDays+days,fill=49-total
-    for(let i=1;i<=fill;i++){const d=new Date(y,m+1,i);calGrid.appendChild(dayCell(d,true))}
-    function dayCell(d,other){const div=document.createElement('div');div.className='cal-day'+(other?' other':'');div.textContent=d.getDate();const today=new Date();if(d.toDateString()===today.toDateString())div.classList.add('today');if(d.toDateString()===viewDate.toDateString())div.classList.add('selected');div.addEventListener('click',()=>{setView(d);fit()});return div}
+    WEEK_HEADER.forEach(dw=>{
+      const h=document.createElement('div')
+      h.className='cal-dow'
+      h.textContent=dw
+      calGrid.appendChild(h)
+    })
+    const first=new Date(y,m,1)
+    const start=first.getDay()
+    const days=new Date(y,m+1,0).getDate()
+    const prevDays=start
+    const prevMonthDays=new Date(y,m,0).getDate()
+    for(let i=prevDays-1;i>=0;i--){
+      const d=new Date(y,m-1,prevMonthDays-i)
+      calGrid.appendChild(dayCell(d,true))
+    }
+    for(let day=1;day<=days;day++){
+      const d=new Date(y,m,day)
+      calGrid.appendChild(dayCell(d,false))
+    }
+    const total=7+prevDays+days
+    const fill=49-total
+    for(let i=1;i<=fill;i++){
+      const d=new Date(y,m+1,i)
+      calGrid.appendChild(dayCell(d,true))
+    }
+    function dayCell(d,other){
+      const div=document.createElement('div')
+      div.className='cal-day'+(other?' other':'')
+      div.textContent=d.getDate()
+      const today=new Date()
+      if(d.toDateString()===today.toDateString()) div.classList.add('today')
+      if(d.toDateString()===viewDate.toDateString()) div.classList.add('selected')
+      div.addEventListener('click',()=>{
+        setView(d)
+        fit()
+      })
+      return div
+    }
   }
 
-  const gridEl=document.getElementById('grid')
   function renderList(){
     gridEl.innerHTML=''
-    roster.forEach(p=>{
-      const card=document.createElement('div');card.className='card '+p.status
-      const btn=document.createElement('button');btn.className='status '+p.status;btn.innerHTML='<span class="pill"></span><span class="label">'+(p.status==='present'?'참여':'불참')+'</span>'
-      btn.addEventListener('click',()=>{p.status=p.status==='present'?'absent':'present';if(p.status!=='absent')p.reason='기타';p.manual=true;saveFor(viewDate);upd();renderTimeline()})
-      const sel=document.createElement('select');sel.className='reason';REASONS.forEach(r=>{const o=document.createElement('option');o.value=r;o.textContent=r;if(p.reason===r)o.selected=true;sel.appendChild(o)});sel.addEventListener('change',()=>{p.reason=sel.value;p.manual=true;saveFor(viewDate);renderTimeline()})
+    const filtered=getFilteredRoster()
+    if(!filtered.length){
+      const empty=document.createElement('div')
+      empty.className='empty-grid'
+      empty.textContent='검색 결과가 없습니다.'
+      gridEl.appendChild(empty)
+      return
+    }
+    filtered.forEach(p=>{
+      const card=document.createElement('div')
+      card.className='card '+p.status
+
+      const btn=document.createElement('button')
+      btn.className='status '+p.status
+      btn.innerHTML='<span class="pill"></span><span class="label">'+(p.status==='present'?'참여':'불참')+'</span>'
+      btn.addEventListener('click',()=>{
+        p.status=p.status==='present'?'absent':'present'
+        if(p.status!=='absent') p.reason='기타'
+        p.manual=true
+        saveFor(viewDate)
+        upd()
+        renderTimeline()
+      })
+
+      const sel=document.createElement('select')
+      sel.className='reason'
+      REASONS.forEach(r=>{
+        const o=document.createElement('option')
+        o.value=r
+        o.textContent=r
+        if(p.reason===r) o.selected=true
+        sel.appendChild(o)
+      })
+      sel.addEventListener('change',()=>{
+        p.reason=sel.value
+        p.manual=true
+        saveFor(viewDate)
+        renderTimeline()
+      })
+
       card.innerHTML='<div class="no">'+p.no+'.</div><div class="name">'+p.name+'</div><div class="id">'+p.id+'</div>'
-      const rw=document.createElement('div');rw.className='reason-wrap';rw.innerHTML='<span class="reason-label">불참 사유</span>';rw.appendChild(sel)
-      card.appendChild(btn);card.appendChild(rw)
-      function upd(){card.className='card '+p.status;btn.className='status '+p.status;btn.querySelector('.label').textContent=(p.status==='present'?'참여':'불참')}
-      upd();gridEl.appendChild(card)
+
+      const rw=document.createElement('div')
+      rw.className='reason-wrap'
+      rw.innerHTML='<span class="reason-label">불참 사유</span>'
+      rw.appendChild(sel)
+
+      card.appendChild(btn)
+      card.appendChild(rw)
+
+      function upd(){
+        card.className='card '+p.status
+        btn.className='status '+p.status
+        btn.querySelector('.label').textContent=(p.status==='present'?'참여':'불참')
+      }
+
+      upd()
+      gridEl.appendChild(card)
     })
   }
 
-  document.getElementById('allPresent').addEventListener('click',()=>{roster.forEach(p=>{p.status='present';p.reason='기타';p.manual=true});saveFor(viewDate);renderList();renderTimeline()})
-  document.getElementById('allAbsent').addEventListener('click',()=>{roster.forEach(p=>{p.status='absent';if(p.reason!=='학원')p.reason='기타';p.manual=true});saveFor(viewDate);renderList();renderTimeline()})
-  document.getElementById('goToday').addEventListener('click',()=>{setView(new Date());fit()})
+  document.getElementById('allPresent').addEventListener('click',()=>{
+    roster.forEach(p=>{
+      p.status='present'
+      p.reason='기타'
+      p.manual=true
+    })
+    saveFor(viewDate)
+    renderList()
+    renderTimeline()
+  })
 
-  const timelineEl=document.getElementById('timeline')
+  document.getElementById('allAbsent').addEventListener('click',()=>{
+    roster.forEach(p=>{
+      p.status='absent'
+      if(p.reason!=='학원') p.reason='기타'
+      p.manual=true
+    })
+    saveFor(viewDate)
+    renderList()
+    renderTimeline()
+  })
+
+  document.getElementById('goToday').addEventListener('click',()=>{
+    setView(new Date())
+    fit()
+  })
+
   function renderTimeline(){
     timelineEl.innerHTML=''
-    const abs=roster.filter(p=>p.status==='absent').map(p=>({no:p.no,name:p.name,reason:p.reason})).sort((a,b)=>a.no-b.no)
-    if(!abs.length){const e=document.createElement('div');e.className='tl-empty';e.textContent='이 날짜의 불참자가 없습니다.';timelineEl.appendChild(e);return}
-    abs.forEach(a=>{const item=document.createElement('div');item.className='tl-item';item.innerHTML='<div class="tl-name">'+a.no+'. '+a.name+'</div><div class="tl-reason">'+a.reason+'</div>';timelineEl.appendChild(item)})
+    const filteredNos=new Set(getFilteredRoster().map(p=>p.no))
+    const abs=roster
+      .filter(p=>p.status==='absent' && filteredNos.has(p.no))
+      .map(p=>({no:p.no,name:p.name,reason:p.reason}))
+      .sort((a,b)=>a.no-b.no)
+
+    if(!abs.length){
+      const e=document.createElement('div')
+      e.className='tl-empty'
+      e.textContent='이 날짜의 불참자가 없습니다.'
+      timelineEl.appendChild(e)
+      return
+    }
+
+    abs.forEach(a=>{
+      const item=document.createElement('div')
+      item.className='tl-item'
+      item.innerHTML='<div class="tl-name">'+a.no+'. '+a.name+'</div><div class="tl-reason">'+a.reason+'</div>'
+      timelineEl.appendChild(item)
+    })
   }
 
-  function fit(){const area=document.getElementById('fitArea');const headerH=document.querySelector('header').offsetHeight;const availH=document.body.clientHeight-headerH-28;const needH=area.scrollHeight;const scale=Math.min(1,availH/needH);area.style.transform='scale('+scale+')'}
+  function csvCell(v){
+    const s=String(v ?? '')
+    return '"'+s.replace(/"/g,'""')+'"'
+  }
+
+  function downloadExcelFile(){
+    const rows=[
+      ['날짜',fmt(viewDate)],
+      [],
+      ['번호','학번','이름','상태','불참 사유','수동 변경']
+    ]
+    getFilteredRoster().forEach(p=>{
+      rows.push([
+        p.no,
+        p.id,
+        p.name,
+        p.status==='present'?'참여':'불참',
+        p.status==='absent'?p.reason:'',
+        p.manual?'예':'아니오'
+      ])
+    })
+    const csv='\uFEFF'+rows.map(row=>row.map(csvCell).join(',')).join('\r\n')
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'})
+    const url=URL.createObjectURL(blob)
+    const a=document.createElement('a')
+    a.href=url
+    a.download='2-3_야자명단_'+fileDate(viewDate)+'.csv'
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  }
+
+  document.getElementById('downloadExcel').addEventListener('click',downloadExcelFile)
+
+  searchInput.addEventListener('input',()=>{
+    renderList()
+    renderTimeline()
+    fit()
+  })
+
+  document.getElementById('clearSearch').addEventListener('click',()=>{
+    searchInput.value=''
+    renderList()
+    renderTimeline()
+    fit()
+    searchInput.focus()
+  })
+
+  function fit(){
+    const area=document.getElementById('fitArea')
+    const headerH=document.querySelector('header').offsetHeight
+    const availH=document.body.clientHeight-headerH-28
+    const needH=area.scrollHeight
+    const scale=Math.min(1,availH/needH)
+    area.style.transform='scale('+scale+')'
+  }
+
   window.addEventListener('resize',fit)
 
-  document.getElementById('prevMonth').addEventListener('click',()=>setView(new Date(viewDate.getFullYear(),viewDate.getMonth()-1,1)))
-  document.getElementById('nextMonth').addEventListener('click',()=>setView(new Date(viewDate.getFullYear(),viewDate.getMonth()+1,1)))
+  document.getElementById('prevMonth').addEventListener('click',()=>{
+    setView(new Date(viewDate.getFullYear(),viewDate.getMonth()-1,1))
+  })
 
-  ;(function(){let last=new Date().toDateString();setInterval(()=>{const now=new Date();const s=now.toDateString();if(s!==last){last=s;setView(now);fit()}},60000)})()
-  window.addEventListener('visibilitychange',()=>{if(!document.hidden){setView(new Date());fit()}})
+  document.getElementById('nextMonth').addEventListener('click',()=>{
+    setView(new Date(viewDate.getFullYear(),viewDate.getMonth()+1,1))
+  })
+
+  ;(function(){
+    let last=new Date().toDateString()
+    setInterval(()=>{
+      const now=new Date()
+      const s=now.toDateString()
+      if(s!==last){
+        last=s
+        setView(now)
+        fit()
+      }
+    },60000)
+  })()
+
+  window.addEventListener('visibilitychange',()=>{
+    if(!document.hidden){
+      setView(new Date())
+      fit()
+    }
+  })
 
   setView(new Date())
   fit()
