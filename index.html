@@ -7,14 +7,14 @@
 <style>
   :root{--bg:#f6f8fb;--card:#fff;--border:#e5e7eb;--text:#0f172a;--sub:#6b7280;--blue:#3b82f6;--red:#ef4444;--shadow:0 8px 24px rgba(15,23,42,.08);--r:14px}
   *{box-sizing:border-box}
-  html,body{height:100%}
-  body{margin:0;background:var(--bg);color:var(--text);font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Malgun Gothic,Helvetica,Arial,sans-serif;overflow:hidden;word-break:keep-all}
-  .page{max-width:1580px;margin:18px auto;padding:0 14px;height:calc(100% - 36px);display:flex;flex-direction:column;gap:12px}
-  header{background:#0b2545;color:#e6f0ff;border-radius:16px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px;box-shadow:var(--shadow)}
+  html,body{min-height:100%}
+  body{margin:0;background:var(--bg);color:var(--text);font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Malgun Gothic,Helvetica,Arial,sans-serif;overflow:auto;word-break:keep-all}
+  .page{max-width:1580px;margin:18px auto;padding:0 14px 18px}
+  header{background:#0b2545;color:#e6f0ff;border-radius:16px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px;box-shadow:var(--shadow);margin-bottom:14px}
   header h1{margin:0;font-size:16px;font-weight:800}
   .meta{font-size:12px;opacity:.9;white-space:nowrap}
-  .fit-area{display:grid;grid-template-columns:360px 1fr;gap:14px;height:calc(100% - 72px);transform-origin:top left;padding-bottom:18px}
-  .side{display:flex;flex-direction:column;gap:10px}
+  .layout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:14px;align-items:start}
+  .side{display:flex;flex-direction:column;gap:10px;position:sticky;top:18px}
   .panel{background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:12px}
   .panel h2{margin:0 0 10px;font-size:14px;color:#334155}
   .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
@@ -28,16 +28,16 @@
   .cal-day.other{opacity:.45}
   .cal-day.today{outline:2px solid #3b82f6}
   .cal-day.selected{background:#eff6ff;border-color:#bfdbfe;font-weight:800}
-  .timeline{max-height:260px;overflow:auto}
+  .timeline{max-height:320px;overflow:auto}
   .tl-empty{color:#64748b;font-size:12px}
   .tl-item{display:flex;justify-content:space-between;padding:6px 8px;border:1px solid var(--border);border-radius:10px;margin-bottom:6px}
   .tl-name{font-weight:800}
   .tl-reason{font-size:12px;color:#64748b}
-  .controls{display:flex;gap:8px;margin:0 2px 4px;flex-wrap:wrap;align-items:center}
+  .controls{display:flex;gap:8px;margin:0 2px 10px;flex-wrap:wrap;align-items:center}
   .hint{margin-left:auto;color:#6b7280;font-size:12px}
   .search{height:38px;min-width:220px;padding:0 12px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--text);outline:none;box-shadow:0 2px 6px rgba(15,23,42,.06)}
   .search:focus{border-color:#93c5fd;box-shadow:0 0 0 4px rgba(59,130,246,.12)}
-  .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+  .grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
   .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto;gap:8px 12px;align-items:center;box-shadow:0 2px 8px rgba(15,23,42,.06);min-height:82px}
   .no{grid-row:1 / span 2;font-weight:800;color:#334155;width:36px;text-align:right;padding-right:6px}
   .name{font-weight:800}
@@ -48,25 +48,26 @@
   .absent{color:#ef4444}.absent .pill{background:#ef4444}
   .reason-wrap{grid-column:2 / -1;display:flex;align-items:center;gap:8px}
   .reason-label{font-size:11px;color:#64748b;white-space:nowrap}
-  .reason{font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:8px;background:#fff;visibility:hidden}
+  .reason{font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:8px;background:#fff;visibility:hidden;max-width:100%}
   .card.absent .reason{visibility:visible}
   .empty-grid{grid-column:1 / -1;background:#fff;border:1px dashed var(--border);border-radius:16px;padding:28px 18px;text-align:center;color:#64748b;box-shadow:0 2px 8px rgba(15,23,42,.04)}
-  .bottom-space{height:10px}
-  @media (max-width:1200px){
-    body{overflow:auto}
-    .page{height:auto;min-height:calc(100% - 36px)}
-    .fit-area{grid-template-columns:1fr;height:auto;transform:none!important}
-    .grid{grid-template-columns:repeat(3,1fr)}
+  @media (max-width:1300px){
+    .grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  }
+  @media (max-width:1100px){
+    .layout{grid-template-columns:1fr}
+    .side{position:static}
+    .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
     .timeline{max-height:none}
   }
   @media (max-width:760px){
-    .page{padding:0 10px}
+    .page{padding:0 10px 14px}
     header{flex-direction:column;align-items:flex-start}
     .meta{white-space:normal}
-    .grid{grid-template-columns:1fr}
     .controls{flex-direction:column;align-items:stretch}
     .hint{margin-left:0}
     .search{min-width:0;width:100%}
+    .grid{grid-template-columns:1fr}
   }
 </style>
 </head>
@@ -77,7 +78,7 @@
       <div class="meta">날짜·시간: <span id="dt"></span> · 보기 날짜: <span id="viewDate"></span></div>
     </header>
 
-    <div id="fitArea" class="fit-area">
+    <div class="layout">
       <div class="side">
         <section class="panel">
           <h2>달력</h2>
@@ -105,24 +106,23 @@
           <div class="hint">요일 자동 불참은 ‘학원’, 수동 불참은 기본 ‘기타’로 저장됨</div>
         </div>
         <section id="grid" class="grid"></section>
-        <div class="bottom-space"></div>
       </div>
     </div>
   </div>
 
 <script>
-  const REASONS=['동아리','학원','병원','방과후','기타']
-  const WEEKDAYS=['일','월','화','수','목','금','토']
-  const KEY='selfstudy-2-03_v2'
+  var REASONS=['동아리','학원','병원','방과후','기타']
+  var WEEKDAYS=['일','월','화','수','목','금','토']
+  var KEY='selfstudy-2-03_v3'
 
-  const RULES={
+  var RULES={
     1:['화'],2:['화'],3:['목'],4:['화'],5:['월'],6:['수'],7:['화'],8:['화'],9:['수'],
     11:['수'],12:['수'],13:['화'],14:['수'],15:['월'],16:['수'],17:['수'],18:['화'],
     19:['수'],20:['월'],21:['수'],22:['화'],23:['목'],24:['화'],25:['수'],26:['화'],
     27:['화'],28:['수'],29:['목'],32:['화'],33:['목'],35:['수'],36:['수']
   }
 
-  const studentData=[
+  var studentData=[
     {no:1,id:'20301',name:'고정현'},{no:2,id:'20302',name:'권오현'},{no:3,id:'20303',name:'김가빈'},
     {no:4,id:'20304',name:'김건우'},{no:5,id:'20305',name:'김민성'},{no:6,id:'20306',name:'김민재'},
     {no:7,id:'20307',name:'김선준'},{no:8,id:'20308',name:'김준우'},{no:9,id:'20309',name:'김채원'},
@@ -137,86 +137,144 @@
     {no:34,id:'20334',name:'조성윤'},{no:35,id:'20335',name:'조승찬'},{no:36,id:'20336',name:'최승호'}
   ]
 
-  const roster=studentData.map(function(x){return {no:x.no,id:x.id,name:x.name,status:'present',reason:'기타',manual:false}})
+  var roster=[]
+  for(var i=0;i<studentData.length;i++){
+    roster.push({no:studentData[i].no,id:studentData[i].id,name:studentData[i].name,status:'present',reason:'기타',manual:false})
+  }
 
-  const weekly={}
-  Object.keys(RULES).forEach(function(k){
-    const set=new Set(RULES[k].map(function(dw){return WEEKDAYS.indexOf(dw)}).filter(function(v){return v>=0}))
-    weekly[+k]=set
-  })
-
-  const dtEl=document.getElementById('dt')
-  const viewDateEl=document.getElementById('viewDate')
-  const calTitle=document.getElementById('calTitle')
-  const calGrid=document.getElementById('calGrid')
-  const gridEl=document.getElementById('grid')
-  const timelineEl=document.getElementById('timeline')
-  const searchInput=document.getElementById('searchInput')
+  var dtEl=document.getElementById('dt')
+  var viewDateEl=document.getElementById('viewDate')
+  var calTitle=document.getElementById('calTitle')
+  var calGrid=document.getElementById('calGrid')
+  var gridEl=document.getElementById('grid')
+  var timelineEl=document.getElementById('timeline')
+  var searchInput=document.getElementById('searchInput')
+  var viewDate=new Date()
+  var dated={}
 
   function tick(){
-    const d=new Date()
+    var d=new Date()
     dtEl.textContent=d.toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'})+' · '+d.toLocaleTimeString('ko-KR',{hour12:false})
   }
-  tick()
-  setInterval(tick,1000)
 
-  let viewDate=new Date()
+  function pad(n){
+    return n<10?'0'+n:String(n)
+  }
 
-  function pad(n){return (''+n).padStart(2,'0')}
-  function keyOf(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
-  function fmt(d){return d.toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'})}
-  function fileDate(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+  function keyOf(d){
+    return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())
+  }
 
-  let dated={}
-  try{
-    const raw=localStorage.getItem(KEY)
-    dated=raw?JSON.parse(raw):{}
-  }catch(e){
-    dated={}
+  function fmt(d){
+    return d.toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'})
+  }
+
+  function fileDate(d){
+    return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())
+  }
+
+  function arrayHas(arr,value){
+    if(!arr) return false
+    return arr.indexOf(value)!==-1
+  }
+
+  function reasonValid(reason){
+    return arrayHas(REASONS,reason)
+  }
+
+  function getSavedItem(saved,no){
+    if(!saved || !saved.length) return null
+    for(var i=0;i<saved.length;i++){
+      if(saved[i] && saved[i].no===no) return saved[i]
+    }
+    return null
   }
 
   function baseline(d){
-    const dow=d.getDay()
-    return studentData.map(function(p){
-      if(weekly[p.no] && weekly[p.no].has(dow)) return {no:p.no,status:'absent',reason:'학원',manual:false}
-      return {no:p.no,status:'present',reason:'기타',manual:false}
-    })
+    var dowName=WEEKDAYS[d.getDay()]
+    var result=[]
+    for(var i=0;i<studentData.length;i++){
+      var p=studentData[i]
+      if(RULES[p.no] && arrayHas(RULES[p.no],dowName)){
+        result.push({no:p.no,status:'absent',reason:'학원',manual:false})
+      }else{
+        result.push({no:p.no,status:'present',reason:'기타',manual:false})
+      }
+    }
+    return result
+  }
+
+  function loadStorage(){
+    try{
+      var raw=localStorage.getItem(KEY)
+      dated=raw?JSON.parse(raw):{}
+    }catch(e){
+      dated={}
+    }
+  }
+
+  function saveStorage(){
+    try{
+      localStorage.setItem(KEY,JSON.stringify(dated))
+    }catch(e){}
   }
 
   function loadFor(d){
-    const key=keyOf(d)
-    const saved=dated[key]
-    const base=baseline(d)
-    const merged=base.map(function(b){
-      if(Array.isArray(saved)){
-        const s=saved.find(function(x){return x && x.no===b.no})
-        if(s){
-          const manual=s.manual===true || s.status!==b.status || s.reason!==b.reason
-          if(manual) return {no:b.no,status:s.status,reason:s.reason,manual:true}
+    var key=keyOf(d)
+    var saved=dated[key]
+    var base=baseline(d)
+    var merged=[]
+
+    for(var i=0;i<base.length;i++){
+      var b=base[i]
+      var s=Array.isArray(saved)?getSavedItem(saved,b.no):null
+      if(s){
+        var manual=s.manual===true || s.status!==b.status || s.reason!==b.reason
+        if(manual){
+          merged.push({no:b.no,status:s.status,reason:s.reason,manual:true})
+        }else{
+          merged.push(b)
         }
+      }else{
+        merged.push(b)
       }
-      return b
-    })
-    roster.forEach(function(p){
-      const m=merged.find(function(x){return x.no===p.no})
+    }
+
+    for(var j=0;j<roster.length;j++){
+      var p=roster[j]
+      var m=getSavedItem(merged,p.no)
       p.status=m.status
-      p.reason=REASONS.includes(m.reason)?m.reason:'기타'
+      p.reason=reasonValid(m.reason)?m.reason:'기타'
       p.manual=!!m.manual
-    })
+    }
+
     if(!Array.isArray(saved)){
       dated[key]=merged
-      try{
-        localStorage.setItem(KEY,JSON.stringify(dated))
-      }catch(e){}
+      saveStorage()
     }
   }
 
   function saveFor(d){
-    const key=keyOf(d)
-    dated[key]=roster.map(function(p){return {no:p.no,status:p.status,reason:p.reason,manual:p.manual===true}})
-    try{
-      localStorage.setItem(KEY,JSON.stringify(dated))
-    }catch(e){}
+    var key=keyOf(d)
+    var arr=[]
+    for(var i=0;i<roster.length;i++){
+      arr.push({no:roster[i].no,status:roster[i].status,reason:roster[i].reason,manual:roster[i].manual===true})
+    }
+    dated[key]=arr
+    saveStorage()
+  }
+
+  function getFilteredRoster(){
+    var q=searchInput.value.replace(/^\s+|\s+$/g,'').toLowerCase()
+    if(!q) return roster.slice()
+    var filtered=[]
+    for(var i=0;i<roster.length;i++){
+      var p=roster[i]
+      if(String(p.no).indexOf(q)!==-1 || String(p.id).toLowerCase().indexOf(q)!==-1 || String(p.name).toLowerCase().indexOf(q)!==-1){
+        filtered.push(p)
+      }
+    }
+    return filtered
   }
 
   function setView(d){
@@ -228,226 +286,206 @@
     renderTimeline()
   }
 
-  function getFilteredRoster(){
-    const q=searchInput.value.trim().toLowerCase()
-    if(!q) return roster
-    return roster.filter(function(p){
-      return String(p.no).includes(q) || p.id.toLowerCase().includes(q) || p.name.toLowerCase().includes(q)
-    })
-  }
-
-  const WEEK_HEADER=['일','월','화','수','목','금','토']
-
-  function renderCalendar(){
-    calGrid.innerHTML=''
-    const y=viewDate.getFullYear()
-    const m=viewDate.getMonth()
-    calTitle.textContent=y+'년 '+(m+1)+'월'
-
-    WEEK_HEADER.forEach(function(dw){
-      const h=document.createElement('div')
-      h.className='cal-dow'
-      h.textContent=dw
-      calGrid.appendChild(h)
-    })
-
-    const first=new Date(y,m,1)
-    const start=first.getDay()
-    const days=new Date(y,m+1,0).getDate()
-    const prevDays=start
-    const prevMonthDays=new Date(y,m,0).getDate()
-
-    for(let i=prevDays-1;i>=0;i--){
-      const d=new Date(y,m-1,prevMonthDays-i)
-      calGrid.appendChild(dayCell(d,true))
-    }
-
-    for(let day=1;day<=days;day++){
-      const d=new Date(y,m,day)
-      calGrid.appendChild(dayCell(d,false))
-    }
-
-    const total=7+prevDays+days
-    const fill=49-total
-    for(let i=1;i<=fill;i++){
-      const d=new Date(y,m+1,i)
-      calGrid.appendChild(dayCell(d,true))
-    }
-  }
-
   function dayCell(d,other){
-    const div=document.createElement('div')
+    var div=document.createElement('div')
     div.className='cal-day'+(other?' other':'')
     div.textContent=d.getDate()
-    const today=new Date()
-    if(d.toDateString()===today.toDateString()) div.classList.add('today')
-    if(d.toDateString()===viewDate.toDateString()) div.classList.add('selected')
+    var today=new Date()
+    if(d.toDateString()===today.toDateString()) div.className+=' today'
+    if(d.toDateString()===viewDate.toDateString()) div.className+=' selected'
     div.addEventListener('click',function(){
       setView(d)
-      fit()
     })
     return div
   }
 
+  function renderCalendar(){
+    var WEEK_HEADER=['일','월','화','수','목','금','토']
+    calGrid.innerHTML=''
+    var y=viewDate.getFullYear()
+    var m=viewDate.getMonth()
+    calTitle.textContent=y+'년 '+(m+1)+'월'
+
+    for(var i=0;i<WEEK_HEADER.length;i++){
+      var h=document.createElement('div')
+      h.className='cal-dow'
+      h.textContent=WEEK_HEADER[i]
+      calGrid.appendChild(h)
+    }
+
+    var first=new Date(y,m,1)
+    var start=first.getDay()
+    var days=new Date(y,m+1,0).getDate()
+    var prevMonthDays=new Date(y,m,0).getDate()
+
+    for(var a=start-1;a>=0;a--){
+      calGrid.appendChild(dayCell(new Date(y,m-1,prevMonthDays-a),true))
+    }
+    for(var day=1;day<=days;day++){
+      calGrid.appendChild(dayCell(new Date(y,m,day),false))
+    }
+
+    var total=7+start+days
+    var fill=49-total
+    for(var b=1;b<=fill;b++){
+      calGrid.appendChild(dayCell(new Date(y,m+1,b),true))
+    }
+  }
+
   function renderList(){
     gridEl.innerHTML=''
-    const filtered=getFilteredRoster()
+    var filtered=getFilteredRoster()
 
     if(!filtered.length){
-      const empty=document.createElement('div')
+      var empty=document.createElement('div')
       empty.className='empty-grid'
       empty.textContent='검색 결과가 없습니다.'
       gridEl.appendChild(empty)
       return
     }
 
-    filtered.forEach(function(p){
-      const card=document.createElement('div')
-      card.className='card '+p.status
+    for(var i=0;i<filtered.length;i++){
+      (function(p){
+        var card=document.createElement('div')
+        var btn=document.createElement('button')
+        var sel=document.createElement('select')
+        var rw=document.createElement('div')
 
-      const btn=document.createElement('button')
-      btn.className='status '+p.status
-      btn.innerHTML='<span class="pill"></span><span class="label">'+(p.status==='present'?'참여':'불참')+'</span>'
-      btn.addEventListener('click',function(){
-        p.status=p.status==='present'?'absent':'present'
-        if(p.status!=='absent') p.reason='기타'
-        p.manual=true
-        saveFor(viewDate)
-        upd()
-        renderTimeline()
-      })
+        function syncCard(){
+          card.className='card '+p.status
+          btn.className='status '+p.status
+          btn.innerHTML='<span class="pill"></span><span class="label">'+(p.status==='present'?'참여':'불참')+'</span>'
+        }
 
-      const sel=document.createElement('select')
-      sel.className='reason'
-      REASONS.forEach(function(r){
-        const o=document.createElement('option')
-        o.value=r
-        o.textContent=r
-        if(p.reason===r) o.selected=true
-        sel.appendChild(o)
-      })
-      sel.addEventListener('change',function(){
-        p.reason=sel.value
-        p.manual=true
-        saveFor(viewDate)
-        renderTimeline()
-      })
+        card.innerHTML='<div class="no">'+p.no+'.</div><div class="name">'+p.name+'</div><div class="id">'+p.id+'</div>'
 
-      card.innerHTML='<div class="no">'+p.no+'.</div><div class="name">'+p.name+'</div><div class="id">'+p.id+'</div>'
+        btn.addEventListener('click',function(){
+          p.status=p.status==='present'?'absent':'present'
+          if(p.status!=='absent') p.reason='기타'
+          p.manual=true
+          saveFor(viewDate)
+          syncCard()
+          renderTimeline()
+        })
 
-      const rw=document.createElement('div')
-      rw.className='reason-wrap'
-      rw.innerHTML='<span class="reason-label">불참 사유</span>'
-      rw.appendChild(sel)
+        sel.className='reason'
+        for(var r=0;r<REASONS.length;r++){
+          var o=document.createElement('option')
+          o.value=REASONS[r]
+          o.textContent=REASONS[r]
+          if(p.reason===REASONS[r]) o.selected=true
+          sel.appendChild(o)
+        }
+        sel.addEventListener('change',function(){
+          p.reason=sel.value
+          p.manual=true
+          saveFor(viewDate)
+          renderTimeline()
+        })
 
-      card.appendChild(btn)
-      card.appendChild(rw)
+        rw.className='reason-wrap'
+        rw.innerHTML='<span class="reason-label">불참 사유</span>'
+        rw.appendChild(sel)
 
-      function upd(){
-        card.className='card '+p.status
-        btn.className='status '+p.status
-        btn.querySelector('.label').textContent=p.status==='present'?'참여':'불참'
-      }
-
-      upd()
-      gridEl.appendChild(card)
-    })
+        card.appendChild(btn)
+        card.appendChild(rw)
+        syncCard()
+        gridEl.appendChild(card)
+      })(filtered[i])
+    }
   }
 
   function renderTimeline(){
     timelineEl.innerHTML=''
-    const filteredNos=new Set(getFilteredRoster().map(function(p){return p.no}))
-    const abs=roster
-      .filter(function(p){return p.status==='absent' && filteredNos.has(p.no)})
-      .map(function(p){return {no:p.no,name:p.name,reason:p.reason}})
-      .sort(function(a,b){return a.no-b.no})
+    var filtered=getFilteredRoster()
+    var allowed={}
+    var abs=[]
+
+    for(var i=0;i<filtered.length;i++){
+      allowed[filtered[i].no]=true
+    }
+    for(var j=0;j<roster.length;j++){
+      if(roster[j].status==='absent' && allowed[roster[j].no]){
+        abs.push({no:roster[j].no,name:roster[j].name,reason:roster[j].reason})
+      }
+    }
+    abs.sort(function(a,b){return a.no-b.no})
 
     if(!abs.length){
-      const e=document.createElement('div')
+      var e=document.createElement('div')
       e.className='tl-empty'
       e.textContent='이 날짜의 불참자가 없습니다.'
       timelineEl.appendChild(e)
       return
     }
 
-    abs.forEach(function(a){
-      const item=document.createElement('div')
+    for(var k=0;k<abs.length;k++){
+      var item=document.createElement('div')
       item.className='tl-item'
-      item.innerHTML='<div class="tl-name">'+a.no+'. '+a.name+'</div><div class="tl-reason">'+a.reason+'</div>'
+      item.innerHTML='<div class="tl-name">'+abs[k].no+'. '+abs[k].name+'</div><div class="tl-reason">'+abs[k].reason+'</div>'
       timelineEl.appendChild(item)
-    })
+    }
   }
 
   function csvCell(v){
-    const s=String(v == null ? '' : v)
+    var s=String(v==null?'':v)
     return '"'+s.replace(/"/g,'""')+'"'
   }
 
   function downloadExcelFile(){
-    const rows=[
+    var rows=[
       ['날짜',fmt(viewDate)],
       [],
       ['번호','학번','이름','상태','불참 사유','수동 변경']
     ]
-
-    getFilteredRoster().forEach(function(p){
+    var filtered=getFilteredRoster()
+    for(var i=0;i<filtered.length;i++){
       rows.push([
-        p.no,
-        p.id,
-        p.name,
-        p.status==='present'?'참여':'불참',
-        p.status==='absent'?p.reason:'',
-        p.manual?'예':'아니오'
+        filtered[i].no,
+        filtered[i].id,
+        filtered[i].name,
+        filtered[i].status==='present'?'참여':'불참',
+        filtered[i].status==='absent'?filtered[i].reason:'',
+        filtered[i].manual?'예':'아니오'
       ])
-    })
-
-    const csv='\uFEFF'+rows.map(function(row){
-      return row.map(csvCell).join(',')
-    }).join('\r\n')
-
-    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'})
-    const url=URL.createObjectURL(blob)
-    const a=document.createElement('a')
+    }
+    var lines=[]
+    for(var j=0;j<rows.length;j++){
+      var cols=[]
+      for(var k=0;k<rows[j].length;k++){
+        cols.push(csvCell(rows[j][k]))
+      }
+      lines.push(cols.join(','))
+    }
+    var csv='\uFEFF'+lines.join('\r\n')
+    var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'})
+    var url=URL.createObjectURL(blob)
+    var a=document.createElement('a')
     a.href=url
     a.download='2-3_야자명단_'+fileDate(viewDate)+'.csv'
     document.body.appendChild(a)
     a.click()
-    a.remove()
+    a.parentNode.removeChild(a)
     URL.revokeObjectURL(url)
   }
 
-  function fit(){
-    if(window.innerWidth<=1200){
-      document.getElementById('fitArea').style.transform='none'
-      return
-    }
-    const area=document.getElementById('fitArea')
-    const header=document.querySelector('header')
-    const headerH=header?header.offsetHeight:0
-    const availH=Math.max(200,window.innerHeight-headerH-28)
-    const needH=Math.max(1,area.scrollHeight)
-    const ratio=availH/needH
-    const scale=Math.max(0.78,Math.min(1,ratio))
-    area.style.transform='scale('+scale+')'
-  }
-
   document.getElementById('allPresent').addEventListener('click',function(){
-    roster.forEach(function(p){
-      p.status='present'
-      p.reason='기타'
-      p.manual=true
-    })
+    for(var i=0;i<roster.length;i++){
+      roster[i].status='present'
+      roster[i].reason='기타'
+      roster[i].manual=true
+    }
     saveFor(viewDate)
     renderList()
     renderTimeline()
   })
 
   document.getElementById('allAbsent').addEventListener('click',function(){
-    roster.forEach(function(p){
-      p.status='absent'
-      if(p.reason!=='학원') p.reason='기타'
-      p.manual=true
-    })
+    for(var i=0;i<roster.length;i++){
+      roster[i].status='absent'
+      if(roster[i].reason!=='학원') roster[i].reason='기타'
+      roster[i].manual=true
+    }
     saveFor(viewDate)
     renderList()
     renderTimeline()
@@ -455,7 +493,6 @@
 
   document.getElementById('goToday').addEventListener('click',function(){
     setView(new Date())
-    fit()
   })
 
   document.getElementById('downloadExcel').addEventListener('click',downloadExcelFile)
@@ -463,51 +500,45 @@
   searchInput.addEventListener('input',function(){
     renderList()
     renderTimeline()
-    fit()
   })
 
   document.getElementById('clearSearch').addEventListener('click',function(){
     searchInput.value=''
     renderList()
     renderTimeline()
-    fit()
     searchInput.focus()
   })
 
   document.getElementById('prevMonth').addEventListener('click',function(){
     setView(new Date(viewDate.getFullYear(),viewDate.getMonth()-1,1))
-    fit()
   })
 
   document.getElementById('nextMonth').addEventListener('click',function(){
     setView(new Date(viewDate.getFullYear(),viewDate.getMonth()+1,1))
-    fit()
   })
 
-  window.addEventListener('resize',fit)
-
   ;(function(){
-    let last=new Date().toDateString()
+    var last=new Date().toDateString()
     setInterval(function(){
-      const now=new Date()
-      const s=now.toDateString()
+      var now=new Date()
+      var s=now.toDateString()
       if(s!==last){
         last=s
         setView(now)
-        fit()
       }
     },60000)
   })()
 
-  window.addEventListener('visibilitychange',function(){
+  document.addEventListener('visibilitychange',function(){
     if(!document.hidden){
       setView(new Date())
-      fit()
     }
   })
 
+  tick()
+  setInterval(tick,1000)
+  loadStorage()
   setView(new Date())
-  fit()
 </script>
 </body>
 </html>
