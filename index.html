@@ -37,7 +37,7 @@
   header h1{margin:0;font-size:15px;font-weight:800}
   .meta{font-size:11px;opacity:.95;white-space:nowrap}
   .layout{
-    display:grid;grid-template-columns:320px minmax(0,1fr);gap:12px;align-items:start
+    display:grid;grid-template-columns:360px minmax(0,1fr);gap:12px;align-items:start
   }
   .side{display:flex;flex-direction:column;gap:10px}
   .panel{
@@ -45,28 +45,42 @@
     box-shadow:var(--shadow);padding:10px
   }
   .panel h2{margin:0 0 8px;font-size:13px;color:#334155}
-  .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .clock-panel{
+    padding:18px 16px;min-height:250px;
+    display:flex;flex-direction:column;justify-content:center;align-items:center;
+    background:linear-gradient(180deg,#0b2545 0%, #12376a 100%);
+    color:#e6f0ff;border:none
+  }
+  .clock-label{
+    font-size:13px;font-weight:800;letter-spacing:.08em;opacity:.9;margin-bottom:10px
+  }
+  .clock-date{
+    font-size:18px;font-weight:700;opacity:.95;margin-bottom:10px;text-align:center
+  }
+  .clock-time{
+    font-size:72px;line-height:1;font-weight:900;letter-spacing:.04em;
+    font-variant-numeric:tabular-nums;text-shadow:0 10px 24px rgba(0,0,0,.22)
+  }
+  .clock-seconds{
+    font-size:30px;font-weight:800;opacity:.92;margin-top:8px
+  }
+  .timeline{max-height:300px;overflow:auto}
+  .tl-empty{color:#64748b;font-size:11px}
+  .tl-item{
+    display:flex;justify-content:space-between;gap:8px;padding:6px 8px;border:1px solid var(--border);
+    border-radius:9px;margin-bottom:6px
+  }
+  .tl-name{font-weight:800;font-size:12px}
+  .tl-reason{font-size:11px;color:#64748b}
+  .summary{
+    margin-top:10px;padding-top:10px;border-top:1px solid var(--border);
+    font-size:12px;font-weight:800;color:#334155
+  }
   .btn{
     background:#fff;border:1px solid var(--border);border-radius:9px;padding:6px 9px;
     font-weight:700;cursor:pointer;box-shadow:0 2px 6px rgba(15,23,42,.06);font-size:12px
   }
-  .btn.small{border-radius:8px;padding:5px 8px}
   .btn:active{transform:translateY(1px)}
-  .cal-title{font-weight:800;font-size:13px}
-  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;font-size:11px;user-select:none}
-  .cal-dow{text-align:center;color:#64748b;font-weight:700}
-  .cal-day{text-align:center;padding:7px 0;border:1px solid var(--border);border-radius:9px;cursor:pointer;background:#fff}
-  .cal-day.other{opacity:.45}
-  .cal-day.today{outline:2px solid #3b82f6}
-  .cal-day.selected{background:#eff6ff;border-color:#bfdbfe;font-weight:800}
-  .timeline{max-height:300px;overflow:auto}
-  .tl-empty{color:#64748b;font-size:11px}
-  .tl-item{
-    display:flex;justify-content:space-between;gap:8px;padding:5px 7px;border:1px solid var(--border);
-    border-radius:9px;margin-bottom:5px
-  }
-  .tl-name{font-weight:800;font-size:12px}
-  .tl-reason{font-size:11px;color:#64748b}
   .controls{
     display:flex;gap:7px;margin:0 2px 8px;flex-wrap:wrap;align-items:center
   }
@@ -113,23 +127,22 @@
         <div class="page" id="page">
           <header>
             <h1>2-3 야자 관리 프로그램</h1>
-            <div class="meta">날짜·시간: <span id="dt"></span> · 보기 날짜: <span id="viewDate"></span></div>
+            <div class="meta">현재 날짜: <span id="viewDate"></span> · 마지막 갱신: <span id="dt"></span></div>
           </header>
 
           <div class="layout">
             <div class="side">
-              <section class="panel">
-                <h2>달력</h2>
-                <div class="cal-header">
-                  <button class="btn small" id="prevMonth">←</button>
-                  <div class="cal-title" id="calTitle"></div>
-                  <button class="btn small" id="nextMonth">→</button>
-                </div>
-                <div class="cal-grid" id="calGrid"></div>
+              <section class="panel clock-panel">
+                <div class="clock-label">현재 시각</div>
+                <div class="clock-date" id="clockDate"></div>
+                <div class="clock-time" id="clockTime">00:00</div>
+                <div class="clock-seconds" id="clockSeconds">00</div>
               </section>
+
               <section class="panel">
-                <h2>타임라인 (선택 날짜의 불참자)</h2>
+                <h2>불참자 명단</h2>
                 <div id="timeline" class="timeline"></div>
+                <div id="summary" class="summary"></div>
               </section>
             </div>
 
@@ -141,7 +154,7 @@
                 <button class="btn" id="downloadExcel">엑셀 다운로드</button>
                 <input class="search" id="searchInput" type="text" placeholder="번호, 학번, 이름 검색" />
                 <button class="btn" id="clearSearch">검색 초기화</button>
-                <div class="hint">요일 자동 불참은 ‘학원’, 수동 불참은 기본 ‘기타’로 저장됨</div>
+                <div class="hint">기본 참여요일이 아닌 날은 자동으로 ‘학원’ 불참 처리됩니다.</div>
               </div>
               <section id="grid" class="grid"></section>
             </div>
@@ -154,13 +167,18 @@
 <script>
   var REASONS=['동아리','학원','병원','방과후','기타']
   var WEEKDAYS=['일','월','화','수','목','금','토']
-  var KEY='selfstudy-2-03_v4'
+  var KEY='selfstudy-2-03_v5'
 
-  var RULES={
-    1:['화'],2:['화'],3:['목'],4:['화'],5:['월'],6:['수'],7:['화'],8:['화'],9:['수'],
-    11:['수'],12:['수'],13:['화'],14:['수'],15:['월'],16:['수'],17:['수'],18:['화'],
-    19:['수'],20:['월'],21:['수'],22:['화'],23:['목'],24:['화'],25:['수'],26:['화'],
-    27:['화'],28:['수'],29:['목'],32:['화'],33:['목'],35:['수'],36:['수']
+  var PARTICIPATION_RULES={
+    1:['월','화','목'],2:['월','수','목'],3:['월','화','목'],4:[],
+    5:['월','수','목'],6:['월','화','수'],7:['월','화','수','목'],8:['월','화','목'],
+    9:['월','수','목'],10:['화','수','목'],11:['월','수','목'],12:['월','수','목'],
+    13:['월','화','목'],14:['월','화','수'],15:['월','화','수'],16:['월','수','목'],
+    17:['월','화','수','목'],18:['월','화','목'],19:['월','수','목'],20:['월','화','목'],
+    21:['월','화','목'],22:['월','화','수','목'],23:['월','화','목'],24:['월','수','목'],
+    25:['월','수','목'],26:['월','화','목'],27:['월','화','수','목'],28:['월','화','목'],
+    29:[],30:['월','화','목'],31:['월','화','수','목'],32:['월','화','목'],
+    33:['월','화','목'],34:['화','수','목'],35:['월','수','목'],36:['월','화','수','목']
   }
 
   var studentData=[
@@ -185,10 +203,12 @@
 
   var dtEl=document.getElementById('dt')
   var viewDateEl=document.getElementById('viewDate')
-  var calTitle=document.getElementById('calTitle')
-  var calGrid=document.getElementById('calGrid')
+  var clockDateEl=document.getElementById('clockDate')
+  var clockTimeEl=document.getElementById('clockTime')
+  var clockSecondsEl=document.getElementById('clockSeconds')
   var gridEl=document.getElementById('grid')
   var timelineEl=document.getElementById('timeline')
+  var summaryEl=document.getElementById('summary')
   var searchInput=document.getElementById('searchInput')
   var fitShell=document.getElementById('fitShell')
   var fitStage=document.getElementById('fitStage')
@@ -198,7 +218,10 @@
 
   function tick(){
     var d=new Date()
-    dtEl.textContent=d.toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'})+' · '+d.toLocaleTimeString('ko-KR',{hour12:false})
+    dtEl.textContent=d.toLocaleTimeString('ko-KR',{hour12:false})
+    clockDateEl.textContent=d.toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'})
+    clockTimeEl.textContent=pad(d.getHours())+':'+pad(d.getMinutes())
+    clockSecondsEl.textContent=pad(d.getSeconds())
   }
 
   function pad(n){
@@ -239,10 +262,11 @@
     var result=[]
     for(var i=0;i<studentData.length;i++){
       var p=studentData[i]
-      if(RULES[p.no] && arrayHas(RULES[p.no],dowName)){
-        result.push({no:p.no,status:'absent',reason:'학원',manual:false})
-      }else{
+      var participates=arrayHas(PARTICIPATION_RULES[p.no],dowName)
+      if(participates){
         result.push({no:p.no,status:'present',reason:'기타',manual:false})
+      }else{
+        result.push({no:p.no,status:'absent',reason:'학원',manual:false})
       }
     }
     return result
@@ -325,56 +349,9 @@
     viewDate=new Date(d.getFullYear(),d.getMonth(),d.getDate())
     viewDateEl.textContent=fmt(viewDate)
     loadFor(viewDate)
-    renderCalendar()
     renderList()
     renderTimeline()
     fitToScreen()
-  }
-
-  function dayCell(d,other){
-    var div=document.createElement('div')
-    div.className='cal-day'+(other?' other':'')
-    div.textContent=d.getDate()
-    var today=new Date()
-    if(d.toDateString()===today.toDateString()) div.className+=' today'
-    if(d.toDateString()===viewDate.toDateString()) div.className+=' selected'
-    div.addEventListener('click',function(){
-      setView(d)
-    })
-    return div
-  }
-
-  function renderCalendar(){
-    var WEEK_HEADER=['일','월','화','수','목','금','토']
-    calGrid.innerHTML=''
-    var y=viewDate.getFullYear()
-    var m=viewDate.getMonth()
-    calTitle.textContent=y+'년 '+(m+1)+'월'
-
-    for(var i=0;i<WEEK_HEADER.length;i++){
-      var h=document.createElement('div')
-      h.className='cal-dow'
-      h.textContent=WEEK_HEADER[i]
-      calGrid.appendChild(h)
-    }
-
-    var first=new Date(y,m,1)
-    var start=first.getDay()
-    var days=new Date(y,m+1,0).getDate()
-    var prevMonthDays=new Date(y,m,0).getDate()
-
-    for(var a=start-1;a>=0;a--){
-      calGrid.appendChild(dayCell(new Date(y,m-1,prevMonthDays-a),true))
-    }
-    for(var day=1;day<=days;day++){
-      calGrid.appendChild(dayCell(new Date(y,m,day),false))
-    }
-
-    var total=7+start+days
-    var fill=49-total
-    for(var b=1;b<=fill;b++){
-      calGrid.appendChild(dayCell(new Date(y,m+1,b),true))
-    }
   }
 
   function renderList(){
@@ -443,16 +420,11 @@
 
   function renderTimeline(){
     timelineEl.innerHTML=''
-    var filtered=getFilteredRoster()
-    var allowed={}
     var abs=[]
 
-    for(var i=0;i<filtered.length;i++){
-      allowed[filtered[i].no]=true
-    }
-    for(var j=0;j<roster.length;j++){
-      if(roster[j].status==='absent' && allowed[roster[j].no]){
-        abs.push({no:roster[j].no,name:roster[j].name,reason:roster[j].reason})
+    for(var i=0;i<roster.length;i++){
+      if(roster[i].status==='absent'){
+        abs.push({no:roster[i].no,name:roster[i].name,reason:roster[i].reason})
       }
     }
     abs.sort(function(a,b){return a.no-b.no})
@@ -462,15 +434,19 @@
       e.className='tl-empty'
       e.textContent='이 날짜의 불참자가 없습니다.'
       timelineEl.appendChild(e)
-      return
+    }else{
+      for(var k=0;k<abs.length;k++){
+        var item=document.createElement('div')
+        item.className='tl-item'
+        item.innerHTML='<div class="tl-name">'+abs[k].no+'. '+abs[k].name+'</div><div class="tl-reason">'+abs[k].reason+'</div>'
+        timelineEl.appendChild(item)
+      }
     }
 
-    for(var k=0;k<abs.length;k++){
-      var item=document.createElement('div')
-      item.className='tl-item'
-      item.innerHTML='<div class="tl-name">'+abs[k].no+'. '+abs[k].name+'</div><div class="tl-reason">'+abs[k].reason+'</div>'
-      timelineEl.appendChild(item)
-    }
+    var total=roster.length
+    var absentCount=abs.length
+    var presentCount=total-absentCount
+    summaryEl.textContent='총 인원 '+total+'명 | 불참 인원 '+absentCount+'명 | 참여 인원 '+presentCount+'명'
   }
 
   function csvCell(v){
@@ -562,24 +538,14 @@
 
   searchInput.addEventListener('input',function(){
     renderList()
-    renderTimeline()
     fitToScreen()
   })
 
   document.getElementById('clearSearch').addEventListener('click',function(){
     searchInput.value=''
     renderList()
-    renderTimeline()
     fitToScreen()
     searchInput.focus()
-  })
-
-  document.getElementById('prevMonth').addEventListener('click',function(){
-    setView(new Date(viewDate.getFullYear(),viewDate.getMonth()-1,1))
-  })
-
-  document.getElementById('nextMonth').addEventListener('click',function(){
-    setView(new Date(viewDate.getFullYear(),viewDate.getMonth()+1,1))
   })
 
   ;(function(){
